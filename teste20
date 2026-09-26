@@ -1,0 +1,61 @@
+ubuntu@vcn-vexa-vnic:~/vexa$ echo "=== CONTAINERS VEXA ==="
+mage}}=== CONTAINERS VEXA ===
+ubuntu@vcn-vexa-vnic:~/vexa$ docker ps -a --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}' | grep -i vexa
+=== REDIS NOS COMPOSES ==="
+grep -Rni --exclude-dir=.git "redis" deploy/lite | head -80
+
+echo
+echo "=== REDIS NO CONTAINER VEXA-LITE ==="
+docker exec vexa-lite sh -c 'env | grep -i redis || true'vexa-lite            vexaai/vexa-lite:v012                                  Up 21 minutes (healthy)
+vexa-lite-whisper    fedirz/faster-whisper-server:latest-cpu                Up 22 minutes
+vexa-lite-minio      ghcr.io/almeidawmarcello-tech/minio-community:latest   Up 3 hours
+vexa-lite-postgres   postgres:17-alpine                                     Up 5 hours
+ubuntu@vcn-vexa-vnic:~/vexa$
+ubuntu@vcn-vexa-vnic:~/vexa$ echo
+
+ubuntu@vcn-vexa-vnic:~/vexa$ echo "=== REDIS NOS COMPOSES ==="
+=== REDIS NOS COMPOSES ===
+ubuntu@vcn-vexa-vnic:~/vexa$ grep -Rni --exclude-dir=.git "redis" deploy/lite | head -80
+deploy/lite/Dockerfile.lite:7:# agent-api (:8100) — over an internal redis + a shared Xvfb/PulseAudio
+deploy/lite/Dockerfile.lite:65:# as the final stage. Valkey (Linux Foundation BSD-3 fork of Redis 7.2.4) gives XAUTOCLAIM parity
+deploy/lite/Dockerfile.lite:66:# with compose/helm and keeps Lite off BOTH ends of the #653 gap: jammy apt's stale redis 6.0.16
+deploy/lite/Dockerfile.lite:67:# (no XAUTOCLAIM — the v0.12.5 witness root) AND source-available Redis ≥7.4 (RSALv2/SSPLv1). Built
+deploy/lite/Dockerfile.lite:68:# from the pinned git tag, so: no external apt-repo trust (the issue verified redis's apt license
+deploy/lite/Dockerfile.lite:97:# The cache/stream store is Valkey, copied from valkey-builder below — NOT jammy apt's redis-server
+deploy/lite/Dockerfile.lite:126:RUN mkdir -p /var/log/supervisor /var/lib/redis /var/run/redis /workspaces
+deploy/lite/Dockerfile.lite:153: && uv pip install --python /opt/venvs/gateway/bin/python "uvicorn[standard]==0.34.0" "redis==5.2.1"
+deploy/lite/Dockerfile.lite:260:    REDIS_HOST=localhost REDIS_PORT=6379 \
+deploy/lite/entrypoint.sh:7:# 2. Derives DATABASE_URL + REDIS_URL from parts (or parses a supplied URL into parts).
+deploy/lite/entrypoint.sh:18:# ─── Redis (internal by default; an external REDIS_URL is honored) ────────────────────────────────
+deploy/lite/entrypoint.sh:19:if [ -z "${REDIS_URL:-}" ]; then
+deploy/lite/entrypoint.sh:20:    export REDIS_HOST="${REDIS_HOST:-localhost}"
+deploy/lite/entrypoint.sh:21:    export REDIS_PORT="${REDIS_PORT:-6379}"
+deploy/lite/entrypoint.sh:22:    export REDIS_URL="redis://${REDIS_HOST}:${REDIS_PORT}/0"
+deploy/lite/entrypoint.sh:126:mkdir -p /workspaces /var/lib/redis /var/run/redis
+deploy/lite/entrypoint.sh:130:echo "  - Redis URL:        ${REDIS_URL}"
+deploy/lite/README.md:9:agent control plane, redis, and the X11/audio stack. No Docker socket, no per-service
+deploy/lite/README.md:70:| redis | 6379 | bus + scheduler + per-dispatch streams (internal) |
+deploy/lite/README.md:86:|  agent-api   redis   Xvfb  fluxbox  PulseAudio  noVNC        |
+deploy/lite/README.md:144:| Ephemeral redis | internal redis is in-container; mount `/var/lib/redis` for persistence |
+deploy/lite/supervisord.conf:6:; over an internal redis + a shared Xvfb/PulseAudio audio-video stack.
+deploy/lite/supervisord.conf:36:; Valkey (BSD-3 fork of Redis 7.2.4) — same RESP wire protocol and config flags as redis-server; the
+deploy/lite/supervisord.conf:37:; REDIS_* env and every consumer are unchanged (#653). Program name stays `redis` (the bus's identity).
+deploy/lite/supervisord.conf:38:[program:redis]
+deploy/lite/supervisord.conf:39:command=/usr/local/bin/valkey-server --bind 127.0.0.1 --port 6379 --dir /var/lib/redis --appendonly yes --appendfsync everysec --protected-mode yes
+deploy/lite/supervisord.conf:150:environment=PYTHONUNBUFFERED="1",PYTHONPATH="/app/runtime/src",HOST="127.0.0.1",PORT="8090",LOG_LEVEL="%(ENV_LOG_LEVEL)s",RUNTIME_BACKEND="process",REDIS_URL="%(ENV_REDIS_URL)s",DISPLAY=":99",BOT_COMMAND="%(ENV_BOT_COMMAND)s",AGENT_WORKER_COMMAND="%(ENV_AGENT_WORKER_COMMAND)s",BROWSER_IMAGE="lite-process",AGENT_IMAGE="lite-process",INTERNAL_API_SECRET="%(ENV_INTERNAL_API_SECRET)s",HOST_CLAUDE_CREDENTIALS="%(ENV_HOST_CLAUDE_CREDENTIALS)s",ANTHROPIC_API_KEY="%(ENV_ANTHROPIC_API_KEY)s",ANTHROPIC_AUTH_TOKEN="%(ENV_ANTHROPIC_AUTH_TOKEN)s",ANTHROPIC_BASE_URL="%(ENV_ANTHROPIC_BASE_URL)s",ANTHROPIC_MODEL="%(ENV_ANTHROPIC_MODEL)s",ANTHROPIC_DEFAULT_OPUS_MODEL="%(ENV_ANTHROPIC_DEFAULT_OPUS_MODEL)s",ANTHROPIC_DEFAULT_SONNET_MODEL="%(ENV_ANTHROPIC_DEFAULT_SONNET_MODEL)s",ANTHROPIC_DEFAULT_HAIKU_MODEL="%(ENV_ANTHROPIC_DEFAULT_HAIKU_MODEL)s"
+deploy/lite/supervisord.conf:170:environment=PYTHONUNBUFFERED="1",PYTHONPATH="/app/agent",VEXA_AGENT_API_PORT="8100",VEXA_RUNTIME_API_URL="http://localhost:8090",VEXA_AGENT_API_SELF_URL="http://localhost:8100",VEXA_MEETING_API_URL="http://localhost:8080",VEXA_AGENT_PROFILE="agent",VEXA_WORKSPACES_DIR="/workspaces",VEXA_WORKSPACE_SEEDS_DIR="/app/agent/workspace-seeds",VEXA_TOOLS_SEED_DIR="/app/agent/tools-seed",VEXA_AGENT_DEFAULT_SUBJECT="%(ENV_VEXA_AGENT_DEFAULT_SUBJECT)s",VEXA_REDIS_URL="%(ENV_REDIS_URL)s",VEXA_DISPATCH_SIGNING_KEY="%(ENV_VEXA_DISPATCH_SIGNING_KEY)s",VEXA_GATEWAY_URL="http://localhost:8056",VEXA_BOT_API_KEY="%(ENV_VEXA_BOT_API_KEY)s",VEXA_LOG_LEVEL="%(ENV_LOG_LEVEL)s",VEXA_AGENT_MODEL="%(ENV_VEXA_AGENT_MODEL)s",VEXA_MEETING_MODEL="%(ENV_VEXA_MEETING_MODEL)s",ANTHROPIC_API_KEY="%(ENV_ANTHROPIC_API_KEY)s",ANTHROPIC_AUTH_TOKEN="%(ENV_ANTHROPIC_AUTH_TOKEN)s",ANTHROPIC_BASE_URL="%(ENV_ANTHROPIC_BASE_URL)s",ANTHROPIC_MODEL="%(ENV_ANTHROPIC_MODEL)s",ANTHROPIC_DEFAULT_OPUS_MODEL="%(ENV_ANTHROPIC_DEFAULT_OPUS_MODEL)s",ANTHROPIC_DEFAULT_SONNET_MODEL="%(ENV_ANTHROPIC_DEFAULT_SONNET_MODEL)s",ANTHROPIC_DEFAULT_HAIKU_MODEL="%(ENV_ANTHROPIC_DEFAULT_HAIKU_MODEL)s"
+deploy/lite/supervisord.conf:185:environment=PYTHONUNBUFFERED="1",PYTHONPATH="/app/meeting-api/src",HOST="127.0.0.1",PORT="8080",LOG_LEVEL="%(ENV_LOG_LEVEL)s",DB_HOST="%(ENV_DB_HOST)s",DB_PORT="%(ENV_DB_PORT)s",DB_NAME="%(ENV_DB_NAME)s",DB_USER="%(ENV_DB_USER)s",DB_PASSWORD="%(ENV_DB_PASSWORD)s",REDIS_URL="%(ENV_REDIS_URL)s",RUNTIME_API_URL="http://localhost:8090",MEETING_API_URL="http://localhost:8080",ADMIN_API_URL="http://localhost:8001",INTERNAL_API_SECRET="%(ENV_INTERNAL_API_SECRET)s",ADMIN_TOKEN="%(ENV_ADMIN_API_TOKEN)s",DEFAULT_BOT_NAME="%(ENV_DEFAULT_BOT_NAME)s",TRANSCRIPTION_SERVICE_URL="%(ENV_TRANSCRIPTION_SERVICE_URL)s",TRANSCRIPTION_SERVICE_TOKEN="%(ENV_TRANSCRIPTION_SERVICE_TOKEN)s",TRANSCRIPTION_MODEL="%(ENV_TRANSCRIPTION_MODEL)s",MINIO_ENDPOINT="%(ENV_MINIO_ENDPOINT)s",MINIO_ACCESS_KEY="%(ENV_MINIO_ACCESS_KEY)s",MINIO_SECRET_KEY="%(ENV_MINIO_SECRET_KEY)s",MINIO_BUCKET="%(ENV_MINIO_BUCKET)s",MINIO_SECURE="%(ENV_MINIO_SECURE)s"
+deploy/lite/supervisord.conf:203:; ban/rate-limit state with the Redis-backed HTTP layer, and under uvicorn --workers N>1 each
+deploy/lite/supervisord.conf:204:; worker keeps an independent WS ban set. With GUARD_ENABLE_REDIS=false AND uvicorn --workers N>1
+deploy/lite/supervisord.conf:207:environment=PYTHONUNBUFFERED="1",PYTHONPATH="/app/gateway/src",HOST="0.0.0.0",PORT="8056",LOG_LEVEL="%(ENV_LOG_LEVEL)s",ADMIN_API_URL="http://localhost:8001",MEETING_API_URL="http://localhost:8080",AGENT_API_URL="http://localhost:8100",REDIS_URL="%(ENV_REDIS_URL)s",INTERNAL_API_SECRET="%(ENV_INTERNAL_API_SECRET)s",GUARD_ENABLED="%(ENV_GUARD_ENABLED)s",GUARD_WS_ENABLED="%(ENV_GUARD_WS_ENABLED)s"
+deploy/lite/supervisord.conf:229:programs=redis,xvfb,fluxbox,pulseaudio,pulseaudio-setup,x11vnc,websockify,admin-api,runtime,agent-api,meeting-api,gateway,terminal
+deploy/lite/bin/vexa-agent-worker:8:# path, redis stream, model creds) arrives in the inherited env; the worker reads its
+ubuntu@vcn-vexa-vnic:~/vexa$
+ubuntu@vcn-vexa-vnic:~/vexa$ echo
+
+ubuntu@vcn-vexa-vnic:~/vexa$ echo "=== REDIS NO CONTAINER VEXA-LITE ==="
+=== REDIS NO CONTAINER VEXA-LITE ===
+ubuntu@vcn-vexa-vnic:~/vexa$ docker exec vexa-lite sh -c 'env | grep -i redis || true'
+REDIS_PORT=6379
+REDIS_HOST=localhost
+ubuntu@vcn-vexa-vnic:~/vexa$
